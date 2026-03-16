@@ -43,13 +43,15 @@ Raw ONT Reads
     ↓
 Quality Control & Filtering (Chopper, NanoPlot)
     ↓
-Contamination Removal (minimap2 + competitive classification)
+Host/Contamination Removal (minimap2 + competitive classification)
     ↓
 Co-assembly (nanoMDBG)
     ↓
 Assembly QC (MetaQUAST)
     ↓
-Read Mapping & Count Matrix
+Read Mapping & Count Matrix (minimap2, samtools)
+    ↓
+Compositional Transformation (GBM zero imputation, centred log-ratio)
     ↓
 Differential Abundance (edgeR + empirical FDR)
     ↓
@@ -93,6 +95,31 @@ cd soil-metagenome-workflow
 conda env create -f environment.yml
 conda activate soil-meta
 ```
+
+## Repository Structure
+
+```
+soil-metagenome-workflow/
+├── scripts/
+│   ├── 00-basecalling/          # Dorado basecalling and demultiplexing
+│   ├── 01-quality-control/      # NanoPlot, FastQC, Chopper filtering
+│   ├── 02-contamination-removal/# Competitive mapping and host read removal
+│   ├── 03-assembly/             # metaMDBG assembly and QC
+│   ├── 04-abundance-analysis/   # Read mapping, edgeR, FDR, annotation
+│   └── 05-visualization/        # Volcano plots, heatmaps
+├── docs/
+│   ├── HeyueWu_masters_thesis.pdf
+│   └── RESOURCE_GUIDE.md        # PBS resource allocation guidance
+├── environment.yml
+├── LICENSE
+└── README.md
+```
+
+Each `scripts/` subdirectory contains its own README with step-by-step instructions, parameter tuning advice, and troubleshooting.
+
+### PBS Resource Allocation
+
+The default PBS resource requests in all scripts were calibrated for this study (~193 Gbp, 358 samples, combined reference of ~21,000 genomes). **Your dataset will have different characteristics — adjust resources accordingly.** See **[`docs/RESOURCE_GUIDE.md`](docs/RESOURCE_GUIDE.md)** for detailed guidance on right-sizing jobs, profiling resource usage, and reducing KSU costs.
 
 ## Citation
 

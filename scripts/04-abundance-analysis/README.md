@@ -23,7 +23,9 @@ Assembled contigs + Filtered reads
     ↓
 [5] empirical_fdr_calibration.R → Calibrated p-value thresholds
     ↓
-[6] annotate_contigs.py → Taxonomic annotation
+[6] map_contigs_to_smag.sh → Contig-to-MAG mapping (mapped_contigs.csv)
+    ↓
+[7] annotate_contigs.py → Taxonomic annotation
 ```
 
 ---
@@ -38,6 +40,8 @@ Replace placeholders in scripts:
 - `<INPUT_FILTERED_FASTQ_DIR>`: Quality-filtered reads from step 01
 - `<OUTPUT_BAM_DIR>`: Directory for BAM files
 - `<INPUT_METADATA_CSV>`: Sample metadata (barcode, treatment, etc.)
+- `<COMBINED_SMAG_PLANT_REFERENCE>`: Combined SMAG + plant genome reference (FASTA/FASTA.gz or .mmi)
+- `<OUTPUT_CONTIG_MAPPING_DIR>`: Directory for contig-to-SMAG mapping output
 - `<SMAG_TAXONOMY_CSV>`: SMAG taxonomy database
 - `<MIN_LIBRARY_SIZE>`: Minimum library size cutoff (e.g., 10000)
 - `<MIN_PREVALENCE>`: Minimum samples a contig must appear in (e.g., 3)
@@ -226,7 +230,55 @@ Rscript empirical_fdr_calibration.R
 
 ---
 
-## Step 6: Annotate Contigs
+## Step 6: Map Contigs to SMAG + Plant Reference
+
+Map assembled contigs against the combined SMAG + plant genome reference to assign each contig to a MAG. This generates the `mapped_contigs.csv` required by step 7.
+
+> **Note**: This step uses the `asm5` preset (assembly-to-reference alignment), which is different from the `map-ont` preset used in `02-alignment` for read-level competitive mapping. Here we are aligning contigs (not reads) to identify which MAG each contig belongs to.
+
+```bash
+# Edit script
+nano map_contigs_to_smag.sh
+
+# Set paths:
+# CONTIG_FILE: Assembled/polished contigs (from assembly step)
+# REF_FILE: Combined SMAG + plant genome reference (FASTA/FASTA.gz or .mmi)
+# OUTPUT_DIR: Output directory for mapping results
+
+# Submit job
+qsub map_contigs_to_smag.sh
+```
+
+**Outputs**:
+- `<base_name>.sorted.bam`: Sorted BAM of contig-to-reference alignments
+- `<base_name>.sorted.flagstat.txt`: Mapping statistics
+- `<base_name>.sorted.idxstats.txt`: Per-reference alignment counts
+- `mapped_contigs.csv`: Contig-to-MAG mapping table (input for step 7)
+
+**Key parameters**:
+- Preset: `asm5` (assembly-to-reference, ≤5% divergence)
+- `--secondary=no`: Retain only the best hit per contig
+- `--split-prefix`: Required for large combined references
+
+**Comparison of alignment steps in this pipeline**:
+
+This pipeline uses minimap2 in three distinct contexts. Each serves a different purpose and requires different presets and parameters:
+
+| | Reads → SMAG + Plant (02-alignment) | Reads → Contigs (step 1) | Contigs → SMAG + Plant (this step) |
+|---|---|---|---|
+| **Input** | Raw/filtered reads | Filtered reads | Assembled contigs |
+| **Reference** | Combined SMAG + plant genomes | Assembled contigs | Combined SMAG + plant genomes |
+| **Preset** | `-ax map-ont` | `-ax map-ont` | `-ax asm5` |
+| **Why this preset** | Long noisy reads to reference | Long noisy reads to reference | Assembly to reference (≤5% divergence) |
+| **Secondary alignments** | Yes (competitive filtering) | No (count matrix needs unique assignments) | No (best hit only for annotation) |
+| **MAPQ filter** | Not applied (all hits retained) | MAPQ ≥ 60 (step 2) | Not applied (best hit retained) |
+| **Purpose** | Identify and remove host contamination from reads | Quantify per-sample contig abundance | Assign each contig to a MAG for taxonomy |
+| **Output** | BAMs for contamination removal | Count matrix (samples × contigs) | `mapped_contigs.csv` (contig_id, MAG_ID) |
+| **Downstream** | Clean reads → assembly | Differential abundance (steps 3–5) | Taxonomic annotation (step 7) |
+
+---
+
+## Step 7: Annotate Contigs
 
 Assign taxonomy to contigs based on MAG mapping.
 ```bash
@@ -311,6 +363,7 @@ qsub scripts/04-abundance-analysis/build_count_matrix.sh
 Rscript scripts/04-abundance-analysis/qc_and_filter_counts.R
 Rscript scripts/04-abundance-analysis/run_edger_analysis.R
 Rscript scripts/04-abundance-analysis/empirical_fdr_calibration.R
+qsub scripts/04-abundance-analysis/map_contigs_to_smag.sh
 python scripts/04-abundance-analysis/annotate_contigs.py
 
 # Next: Binning and functional annotation (optional)
