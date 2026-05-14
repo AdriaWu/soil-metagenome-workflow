@@ -1,0 +1,56 @@
+<svg width="100%" viewBox="0 0 680 360" xmlns="http://www.w3.org/2000/svg">
+<style>
+.t  { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 14px; fill: #2C2C2A; }
+.ts { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 12px; fill: #5F5E5A; }
+.th { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 14px; font-weight: 500; fill: #2C2C2A; }
+</style>
+
+<text class="th" x="340" y="28" text-anchor="middle">Sample size sets a hard floor on empirical FDR</text>
+<text class="ts" x="340" y="46" text-anchor="middle">floor ≈ 2 / C(n, k) — the smaller the sample, the higher the floor</text>
+
+<g transform="translate(60, 80)">
+<rect x="0" y="0" width="260" height="240" rx="12" fill="#FAEEDA" stroke="#BA7517" stroke-width="0.5"/>
+<text class="th" x="130" y="28" text-anchor="middle" fill="#412402">Forest soil</text>
+<text class="ts" x="130" y="46" text-anchor="middle" fill="#633806">n = 7, k = 3 compost</text>
+
+<text class="ts" x="20" y="80" fill="#633806">Unique permutations</text>
+<text class="th" x="240" y="80" text-anchor="end" fill="#412402">C(7, 3) = 35</text>
+
+<text class="ts" x="20" y="108" fill="#633806">Strict floor (1/C)</text>
+<text class="th" x="240" y="108" text-anchor="end" fill="#412402">2.9%</text>
+
+<text class="ts" x="20" y="136" fill="#633806">Symmetric floor (2/C)</text>
+<text class="th" x="240" y="136" text-anchor="end" fill="#412402">5.7%</text>
+
+<line x1="20" y1="156" x2="240" y2="156" stroke="#BA7517" stroke-width="0.5" opacity="0.4"/>
+
+<text class="ts" x="20" y="180" fill="#633806">Target FDR = 5%</text>
+<text class="th" x="240" y="180" text-anchor="end" fill="#A32D2D">Below floor</text>
+
+<text class="ts" x="20" y="208" fill="#633806">Target FDR = 10%</text>
+<text class="th" x="240" y="208" text-anchor="end" fill="#04342C">Achievable</text>
+</g>
+
+<g transform="translate(360, 80)">
+<rect x="0" y="0" width="260" height="240" rx="12" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+<text class="th" x="130" y="28" text-anchor="middle" fill="#04342C">River soil</text>
+<text class="ts" x="130" y="46" text-anchor="middle" fill="#085041">n = 9, k = 3 compost</text>
+
+<text class="ts" x="20" y="80" fill="#085041">Unique permutations</text>
+<text class="th" x="240" y="80" text-anchor="end" fill="#04342C">C(9, 3) = 84</text>
+
+<text class="ts" x="20" y="108" fill="#085041">Strict floor (1/C)</text>
+<text class="th" x="240" y="108" text-anchor="end" fill="#04342C">1.2%</text>
+
+<text class="ts" x="20" y="136" fill="#085041">Symmetric floor (2/C)</text>
+<text class="th" x="240" y="136" text-anchor="end" fill="#04342C">2.4%</text>
+
+<line x1="20" y1="156" x2="240" y2="156" stroke="#0F6E56" stroke-width="0.5" opacity="0.4"/>
+
+<text class="ts" x="20" y="180" fill="#085041">Target FDR = 5%</text>
+<text class="th" x="240" y="180" text-anchor="end" fill="#04342C">Achievable</text>
+
+<text class="ts" x="20" y="208" fill="#085041">Target FDR = 10%</text>
+<text class="th" x="240" y="208" text-anchor="end" fill="#04342C">Comfortable</text>
+</g>
+</svg>

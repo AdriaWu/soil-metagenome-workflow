@@ -1,0 +1,53 @@
+<svg width="100%" viewBox="0 0 680 440" xmlns="http://www.w3.org/2000/svg">
+<style>
+.t  { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 14px; fill: #2C2C2A; }
+.ts { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 12px; fill: #5F5E5A; }
+.th { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 14px; font-weight: 500; fill: #2C2C2A; }
+</style>
+
+<text class="th" x="340" y="28" text-anchor="middle">Finding τ where empirical FDR meets the target</text>
+
+<g transform="translate(60, 60)">
+<text class="th" x="0" y="0">Top: discoveries at each p-value cutoff</text>
+
+<line x1="0" y1="20" x2="0" y2="160" stroke="#888780" stroke-width="0.5"/>
+<line x1="0" y1="160" x2="560" y2="160" stroke="#888780" stroke-width="0.5"/>
+<text class="ts" x="-8" y="24" text-anchor="end">hits</text>
+<text class="ts" x="0" y="178" text-anchor="middle">0</text>
+<text class="ts" x="140" y="178" text-anchor="middle">0.01</text>
+<text class="ts" x="280" y="178" text-anchor="middle">0.025</text>
+<text class="ts" x="420" y="178" text-anchor="middle">0.05</text>
+<text class="ts" x="560" y="178" text-anchor="middle">0.10</text>
+<text class="ts" x="280" y="196" text-anchor="middle">p-value threshold (τ)</text>
+
+<path d="M0 160 L40 145 L80 120 L140 90 L200 70 L260 55 L320 45 L380 40 L440 36 L500 33 L560 31" stroke="#185FA5" stroke-width="2" fill="none"/>
+<path d="M0 160 L40 158 L80 156 L140 152 L200 148 L260 142 L320 134 L380 124 L440 110 L500 95 L560 78" stroke="#888780" stroke-width="2" fill="none" stroke-dasharray="4 3"/>
+
+<circle cx="180" cy="80" r="3" fill="#185FA5"/>
+<text class="ts" x="186" y="76" fill="#0C447C">obs_hits</text>
+<circle cx="180" cy="150" r="3" fill="#888780"/>
+<text class="ts" x="186" y="146" fill="#444441">null_mean_hits</text>
+</g>
+
+<g transform="translate(60, 280)">
+<text class="th" x="0" y="0">Bottom: empirical FDR = null hits / observed hits</text>
+
+<line x1="0" y1="20" x2="0" y2="140" stroke="#888780" stroke-width="0.5"/>
+<line x1="0" y1="140" x2="560" y2="140" stroke="#888780" stroke-width="0.5"/>
+<text class="ts" x="-8" y="24" text-anchor="end">FDR</text>
+<text class="ts" x="-8" y="60" text-anchor="end">0.10</text>
+<text class="ts" x="-8" y="92" text-anchor="end">0.05</text>
+<text class="ts" x="-8" y="142" text-anchor="end">0</text>
+
+<line x1="0" y1="60" x2="560" y2="60" stroke="#A32D2D" stroke-width="0.8" stroke-dasharray="4 3"/>
+<text class="ts" x="556" y="56" text-anchor="end" fill="#A32D2D">target FDR = 0.10</text>
+
+<path d="M0 140 L20 138 L40 134 L60 128 L80 118 L100 105 L120 88 L140 70 L160 60 L180 55 L220 47 L260 42 L320 38 L380 36 L440 34 L500 32 L560 30" stroke="#0F6E56" stroke-width="2" fill="none"/>
+
+<line x1="160" y1="60" x2="160" y2="140" stroke="#0F6E56" stroke-width="0.8" stroke-dasharray="3 3"/>
+<circle cx="160" cy="60" r="4" fill="#0F6E56"/>
+<text class="th" x="160" y="158" text-anchor="middle" fill="#04342C">τ ≈ 0.025</text>
+
+<text class="ts" x="280" y="196" text-anchor="middle">p-value threshold (τ)</text>
+</g>
+</svg>
