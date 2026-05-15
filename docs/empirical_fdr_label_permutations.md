@@ -118,7 +118,7 @@ Visually, the procedure looks like this — observed and null discovery counts d
 `τ` grows, and their ratio (the empirical FDR) crosses the target threshold at a
 specific cutoff:
 
-![Empirical FDR curve and tau selection](figures/fig2_fdr_curve.svg)
+![Empirical FDR curve and tau selection](https://github.com/AdriaWu/soil-metagenome-workflow/blob/main/docs/figures/02_fdr_curve.svg)
 
 ---
 
@@ -152,7 +152,7 @@ assignment (filled = compost, empty = no_compost). The real labels appear as one
 the 35, and the "mirror image" — the maximally different assignment — appears as
 another:
 
-![All 35 label permutations for forest soil](figures/fig1_permutation_enumeration.svg)
+![All 35 label permutations for forest soil](https://github.com/AdriaWu/soil-metagenome-workflow/blob/main/docs/figures/01_permutation_enumeration.svg)
 
 ### Why `sample()` 500 times can be wasteful
 
@@ -247,7 +247,7 @@ For Saige's dataset:
 Side by side, the consequence is clear: forest's floor sits above the conventional 5%
 target, while river's sits well below it:
 
-![How sample size sets the empirical FDR floor](figures/fig3_sample_size_floor.svg)
+![How sample size sets the empirical FDR floor](https://github.com/AdriaWu/soil-metagenome-workflow/blob/main/docs/figures/03_fdr_floor_comparison.svg)
 
 **For forest, this is a hard mathematical wall.** Targeting 5% FDR is impossible by
 construction — the floor is at least 5.7%. The minimum reasonable target is **10%**.
