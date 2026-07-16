@@ -4,7 +4,7 @@ PBS scripts for Oxford Nanopore read quality assessment and filtering.
 
 ## Prerequisites
 
-- Conda environment with: `nanoplot`, `fastqc`, `multiqc`, `chopper`
+- Conda environment with: `nanoplot`, `fastqc`, `multiqc`, `chopper`, `porechop_abi`
 - PBS/Torque cluster with jobfs support
 
 ## Configuration
@@ -16,6 +16,7 @@ Before running, edit each script to replace placeholders:
 - `<QC_ENV_PATH>`: Path to your QC conda environment
 - `<INPUT_FASTQ_DIR>`: Directory containing input FASTQ files
 - `<OUTPUT_BASE_DIR>`: Base directory for results
+- `<OUTPUT_ADAPTERTRIM_DIR>`: Directory for adapter-trimmed reads (porechop_abi only)
 - `<OUTPUT_FILTERED_DIR>`: Directory for filtered reads (chopper only)
 
 ## Preserving BAM Tags (MM/ML) During FASTQ Conversion
@@ -76,7 +77,9 @@ samtools view aligned.bam | head -1 | tr '\t' '\n' | grep "^MM\|^ML"
 
 ### Relevance to This QC Workflow
 
-The QC tools in this pipeline (NanoPlot, FastQC, Chopper) operate on FASTQ files and do not use or require MM/ML tags. However, if you are converting BAMs to FASTQ as input for this QC workflow **and** you need to use those same FASTQ files for downstream alignment with tag preservation, make sure to use `samtools fastq -T MM,ML` during the conversion step.
+The QC tools in this pipeline (NanoPlot, FastQC, Chopper, Porechop_ABI) operate on FASTQ files and do not use or require MM/ML tags. However, if you are converting BAMs to FASTQ as input for this QC workflow **and** you need to use those same FASTQ files for downstream alignment with tag preservation, make sure to use `samtools fastq -T MM,ML` during the conversion step.
+
+**Extra caveat for Porechop_ABI:** unlike the other QC tools, Porechop_ABI *rewrites* reads — it trims adapter bases and renames/splits reads at internal adapters — so it does **not** preserve MM/ML tag comments, and the read coordinates no longer match the original BAM. The adapter-trimmed FASTQ is the correct input for the **assembly** branch (metaMDBG needs no methylation tags). Do **not** feed it into a methylation/tag-preserving alignment branch; that branch should start from the original unaligned BAM (or a `samtools fastq -T MM,ML` conversion), not from Porechop_ABI output.
 
 If QC and alignment are separate workflows using different FASTQ files, this is not a concern — just ensure the alignment workflow starts from the original unaligned BAMs or from FASTQ files generated with `-T MM,ML`.
 
@@ -110,7 +113,35 @@ qsub run_fastqc.sh
 
 ---
 
-### Step 3: Chopper (Quality Filtering)
+### Step 3: Porechop_ABI (Adapter Trimming & Chimera Splitting)
+
+Runs **before** Chopper. Removes Oxford Nanopore adapters and, by default,
+**splits reads at internal (mid-read) adapters**. An internal adapter marks a
+chimeric/concatenated molecule; if left in place it is assembled straight
+through and surfaces as internal-adapter contamination at NCBI submission.
+Dorado `--trim` (at basecalling) only trims adapters from read *ends*, so this
+step is what catches the rest.
+
+```bash
+# Edit script to set paths
+nano 0104_trim_porechop_abi.sh
+
+# Submit job
+qsub 0104_trim_porechop_abi.sh
+```
+
+- Uses `-abi` (ab-initio adapter discovery, on top of the built-in adapter set);
+  it also reports when a file is already trimmed.
+- Splitting on internal adapters is the **default** — do not pass `--no_split`
+  (keeps chimeras) or `--discard_middle` (discards the whole read).
+- Porechop_ABI is the slow step. For a full cohort, run it as a PBS **array**
+  (one sample per task) — see the header comments in the script.
+
+**Output**: `<OUTPUT_ADAPTERTRIM_DIR>/<sample>_adaptertrim.fastq.gz`
+
+---
+
+### Step 4: Chopper (Quality Filtering)
 ```bash
 # Edit script to set paths and filtering parameters
 nano filter_chopper.sh
@@ -119,7 +150,7 @@ nano filter_chopper.sh
 MIN_LENGTH=2000    # Minimum read length (bp)
 MIN_QUALITY=18     # Minimum average quality score
 
-# Submit job
+# Submit job (run on the adapter-trimmed reads from Step 3)
 qsub filter_chopper.sh
 ```
 
@@ -127,7 +158,7 @@ qsub filter_chopper.sh
 
 ---
 
-### Step 4: MultiQC (Aggregate Report)
+### Step 5: MultiQC (Aggregate Report)
 
 After running NanoPlot and/or FastQC:
 ```bash
@@ -151,10 +182,13 @@ qsub run_fastqc.sh
 # 3. Wait for jobs to complete, then aggregate
 qsub multiqc_report.sh
 
-# 4. Filter reads based on QC results
+# 4. Adapter-trim & split chimeras on the raw demuxed reads
+qsub 0104_trim_porechop_abi.sh
+
+# 5. Quality/length filter the adapter-trimmed reads
 qsub filter_chopper.sh
 
-# 5. Run QC on filtered reads
+# 6. Run QC on the final filtered reads
 # (Edit scripts to point to filtered directory, then rerun)
 qsub run_nanoplot.sh
 qsub run_fastqc.sh
@@ -163,12 +197,17 @@ qsub multiqc_report.sh
 
 ## Resource Requirements
 
-| Script          | Memory | CPUs | Walltime | Jobfs |
-|-----------------|--------|------|----------|-------|
-| run_nanoplot    | 64 GB  | 8    | 5 hours  | 400 GB|
-| run_fastqc      | 64 GB  | 8    | 5 hours  | 400 GB|
-| filter_chopper  | 32 GB  | 8    | 10 hours | 400 GB|
-| multiqc_report  | 16 GB  | 1    | 1 hour   | N/A   |
+| Script             | Memory | CPUs | Walltime | Jobfs |
+|--------------------|--------|------|----------|-------|
+| run_nanoplot       | 64 GB  | 8    | 5 hours  | 400 GB|
+| run_fastqc         | 64 GB  | 8    | 5 hours  | 400 GB|
+| trim_porechop_abi  | 48 GB  | 12   | 10 hours | 200 GB|
+| filter_chopper     | 32 GB  | 8    | 10 hours | 400 GB|
+| multiqc_report     | 16 GB  | 1    | 1 hour   | N/A   |
+
+> Porechop_ABI uses little memory (<1 GB peak in testing) but is CPU-bound and
+> slow. The row above is per-sample; for a full cohort run it as a PBS array so
+> samples process in parallel rather than one 10-hour job per sample serially.
 
 ## Troubleshooting
 
@@ -208,6 +247,10 @@ If MultiQC report is empty:
 └── multiqc/
     ├── multiqc_report.html
     └── multiqc_data/
+
+<OUTPUT_ADAPTERTRIM_DIR>/
+├── sample1_adaptertrim.fastq.gz
+└── sample2_adaptertrim.fastq.gz
 
 <OUTPUT_FILTERED_DIR>/
 ├── sample1_filtered.fastq.gz

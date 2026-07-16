@@ -41,6 +41,8 @@ The BioProject encompasses three complementary experiments:
 ```
 Raw ONT Reads
     ↓
+Adapter Trimming & Chimera Splitting (Porechop_ABI)
+    ↓
 Quality Control & Filtering (Chopper, NanoPlot)
     ↓
 Host/Contamination Removal (minimap2 + competitive classification)
@@ -63,6 +65,7 @@ Taxonomic Annotation & Visualisation
 ### Key Features
 
 - **High-contiguity assembly** using metaMDBG optimised for ONT R10 chemistry
+- **Adapter-clean reads before assembly** — Porechop_ABI removes residual ONT adapters and splits chimeric reads at internal adapters, preventing the internal-adapter contigs that NCBI's Foreign Contamination Screen rejects
 - **Rigorous contamination removal** through competitive mapping against host references
 - **Compositionally-aware analysis** — GBM zero imputation and centred log-ratio transformation for sparse count data
 - **Empirical FDR-controlled** differential abundance testing
@@ -102,7 +105,7 @@ conda activate soil-meta
 soil-metagenome-workflow/
 ├── scripts/
 │   ├── 00-basecalling/          # Dorado basecalling and demultiplexing
-│   ├── 01-quality-control/      # NanoPlot, FastQC, Chopper filtering
+│   ├── 01-quality-control/      # NanoPlot, FastQC, Porechop_ABI adapter trim, Chopper filtering
 │   ├── 02-contamination-removal/# Competitive mapping and host read removal
 │   ├── 03-assembly/             # metaMDBG assembly and QC
 │   ├── 04-abundance-analysis/   # Read mapping, edgeR, FDR, annotation
