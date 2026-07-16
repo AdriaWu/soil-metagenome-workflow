@@ -1,6 +1,6 @@
 # Long-Read Soil Metagenomics Pipeline
 
-[![DOI](https://zenodo.org/badge/1089933240.svg)](https://doi.org/10.5281/zenodo.18974276)
+[![DOI](https://zenodo.org/badge/1089933240.svg)](https://doi.org/10.5281/zenodo.21387722)
 
 Workflow for high-quality genome assembly and differential abundance analysis 
 from Oxford Nanopore soil metagenomic data.
